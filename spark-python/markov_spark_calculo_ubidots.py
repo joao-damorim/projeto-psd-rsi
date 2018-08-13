@@ -4,8 +4,8 @@
 # @UnusedImport will never solve that issue.
 
 # Imports the PySpark libraries
-from pyspark import SparkConf, SparkContext
-from pyspark.streaming import StreamingContext
+#from pyspark import SparkConf, SparkContext
+#from pyspark.streaming import StreamingContext
 
 # The 'os' library allows us to read the environment variable SPARK_HOME defined in the IDE environment
 import os
@@ -16,7 +16,7 @@ import time
 import requests
 import sys
 import paho.mqtt.client as mqtt
-
+from enviar_thingsboard import sendThingsBoard
 
 class Markov():
 
@@ -136,17 +136,14 @@ def main(controle):
                         m = Markov()
 
                         total_de_pessoas_3_locais = m.qtd_de_pessoas(listaImagem)
-                        # print(total_de_pessoas_3_locais)
 
                         localizacao_pessoas_3_locais = m.localizacao_pessoa(listaImagem)
-                        # print(localizacao_pessoas_3_locais)
 
                         total_de_pessoas_em_cada_local = m.qtd_de_pessoas_em_cada_local(localizacao_pessoas_3_locais)
-                        # print(total_de_pessoas_em_cada_local)
 
                         array_atual = m.calcular_total_de_pessoas_por_lugar_porcentagem(total_de_pessoas_3_locais,
                                                                                         total_de_pessoas_em_cada_local)
-                        # print(array_atual)
+
 
                         with open('matriz_de_transicao_' + str(controle) + '.json', 'r') as f:
                             matriz_transicao_passada = json.load(f)
@@ -169,15 +166,12 @@ def main(controle):
 
                         local_3 = array_futuro.item(2)
 
-                        print(local_1)
-                        print(local_2)
-                        print(local_3)
-
                         payload = build_payload(
                             VARIABLE_LABEL_1, VARIABLE_LABEL_2, VARIABLE_LABEL_3, local_1, local_2, local_3)
 
                         print("[INFO] Attemping to send data")
                         post_request(payload)
+                        sendThingsBoard([payload])
                         print("[INFO] finished")
 
                     except IOError:
@@ -200,6 +194,6 @@ if __name__ == '__main__':
             while (True):
                 main(controle)
                 controle += 1
-                time.sleep(5)
+                time.sleep(630)
         print("Procurando arquivo de imagem para estimativa!")
-        time.sleep(10)
+        time.sleep(5)
